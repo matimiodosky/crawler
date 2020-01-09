@@ -8,6 +8,9 @@ import org.jsoup.nodes.Document
 import scala.util.Try
 import messages._
 
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
+import akka.pattern.pipe
 
 class Parser extends Actor {
 
@@ -34,7 +37,9 @@ class Parser extends Actor {
   override def receive: Receive = {
 
     case Parse(url, html) =>
-      sender() ! Parsed(getUrls(url, html))
+      Future {getUrls(url, html)}
+          .map(urls => Parsed(urls))
+          .pipeTo(sender)
   }
 
 }

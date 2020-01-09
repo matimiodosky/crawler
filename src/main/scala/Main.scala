@@ -18,7 +18,7 @@ object Main  extends App {
   val dumper: ActorRef = system.actorOf(Props(Dumper(crawler)))
 
   crawler.tell(Start("https://www.youtube.com/"), printer)
-  system.scheduler.scheduleAtFixedRate(Duration.Zero, Duration(10, TimeUnit.SECONDS) , monitor, Tick())
-  system.scheduler.scheduleAtFixedRate(Duration.Zero, Duration(10, TimeUnit.SECONDS) , dumper, Tick())
+  system.scheduler.scheduleAtFixedRate(Duration.Zero, Duration(5, TimeUnit.SECONDS) , monitor, Tick())
+//  system.scheduler.scheduleAtFixedRate(Duration.Zero, Duration(1, TimeUnit.MINUTES) , dumper, Tick())
 
 }

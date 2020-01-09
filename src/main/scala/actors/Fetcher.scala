@@ -1,19 +1,36 @@
 package actors
 
-import akka.actor.Actor
-import akka.pattern.pipe
+import akka.actor.{Actor, Props}
+import akka.routing.{ ActorRefRoutee, RoundRobinRoutingLogic, Router }
 import messages._
 import org.jsoup.Jsoup
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 
 class Fetcher extends Actor {
 
+  var router: Router = {
+    val workers = Vector.fill(24) {
+      val r = context.actorOf(Props[FetcherWorker])
+      context.watch(r)
+      ActorRefRoutee(r)
+    }
+    Router(RoundRobinRoutingLogic(), workers)
+  }
+
+  override def receive: Receive = {
+    case work => router.route(work, sender)
+  }
+}
+
+class FetcherWorker extends Actor {
+
   override def receive: Receive = {
     case Fetch(url) =>
-      Future {Jsoup.connect(url).get()}
-        .map(document => Fetched(url, document))
-        .pipeTo(sender())
+      try {
+        sender ! Fetched(url, Jsoup.connect(url).get())
+      } catch {
+        case _: Throwable =>
+      }
   }
+
 }

@@ -38,7 +38,7 @@ class Crawler extends Actor {
 
       newUrls.foreach(url => {
         fetcher ! Fetch(url)
-        //client ! Print(showUrl(url) + "    " + url)
+        client ! Print(showUrl(url) + "    " + url)
       })
 
       visited = visited ::: newUrls

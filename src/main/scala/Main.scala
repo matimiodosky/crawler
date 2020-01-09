@@ -19,6 +19,6 @@ object Main  extends App {
 
   crawler.tell(Start("https://www.youtube.com/"), printer)
   system.scheduler.scheduleAtFixedRate(Duration.Zero, Duration(5, TimeUnit.SECONDS) , monitor, Tick())
-//  system.scheduler.scheduleAtFixedRate(Duration.Zero, Duration(1, TimeUnit.MINUTES) , dumper, Tick())
+  system.scheduler.scheduleAtFixedRate(Duration.Zero, Duration(30, TimeUnit.SECONDS) , dumper, Tick())
 
 }

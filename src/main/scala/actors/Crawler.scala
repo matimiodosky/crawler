@@ -11,7 +11,7 @@ class Crawler extends Actor {
   val fetcher: ActorRef = context.actorOf(Props[Fetcher])
   val parser: ActorRef = context.actorOf(Props[Parser])
   var client: ActorRef = ActorRef.noSender
-  var persistor: ActorRef = context.actorOf(Props[Persistor])
+  var history: ActorRef = context.actorOf(Props[History])
 
   def showUrl(url: String): String = {
     try {
@@ -27,7 +27,7 @@ class Crawler extends Actor {
 
     case Start(url) =>
       client = sender
-      persistor ! ValidateVisited(url)
+      history ! ValidateAsNewURL(url)
 
     case Fetched(url, html) =>
       parser ! Parse(url, html)
@@ -35,12 +35,12 @@ class Crawler extends Actor {
     case Parsed(urls) =>
 
       urls.foreach(url => {
-        persistor ! ValidateVisited(url)
+        history ! ValidateAsNewURL(url)
       })
 
-    case ValidatedUnvisited(url) =>
+    case NewURL(url) =>
       fetcher ! Fetch(url)
-      client ! Print(showUrl(url) + "    " + url)
+      client ! Print("NEW URL" + showUrl(url) + "    " + url)
 
   }
 

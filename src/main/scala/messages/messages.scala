@@ -18,9 +18,9 @@ case class StatsRequest(lastCount: Int)
 
 case class StatsResponse(currentCount: Int, newsCount: Int)
 
-case class ValidateVisited(url: String)
+case class ValidateAsNewURL(url: String)
 
-case class ValidatedUnvisited(url: String)
+case class NewURL(url: String)
 
 case class DumpResponse(urls: List[String])
 

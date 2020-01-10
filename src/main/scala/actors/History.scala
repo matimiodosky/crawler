@@ -3,18 +3,15 @@ package actors
 import java.util.UUID
 
 import akka.actor.Actor
-import messages.{ValidateVisited, ValidatedUnvisited}
+import akka.pattern.pipe
+import messages.{ValidateAsNewURL, NewURL}
 import org.mongodb.scala._
 import org.mongodb.scala.model.Filters._
 
-import scala.jdk.CollectionConverters._
 import scala.concurrent.ExecutionContext.Implicits.global
-import akka.pattern.pipe
+import scala.jdk.CollectionConverters._
 
-import scala.util.Success
-
-
-class Persistor extends Actor {
+class History extends Actor {
 
   val mongoClient: MongoClient = MongoClient()
 
@@ -43,7 +40,7 @@ class Persistor extends Actor {
 
   override def receive: Receive = {
 
-    case ValidateVisited(url) => collection
+    case ValidateAsNewURL(url) => collection
       .find(equal("url", url))
       .collect()
       .toFuture()
@@ -51,7 +48,7 @@ class Persistor extends Actor {
       .map(seq => collection
         .insertOne(Document("_id" -> UUID.randomUUID().toString, "url" -> url))
         .toFuture())
-      .map(_ => ValidatedUnvisited(url))
+      .map(_ => NewURL(url))
       .pipeTo(sender)
 
   }

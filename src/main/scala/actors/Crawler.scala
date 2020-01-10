@@ -8,10 +8,10 @@ import messages._
 
 class Crawler extends Actor {
 
-  var visited: List[String] = List()
   val fetcher: ActorRef = context.actorOf(Props[Fetcher])
   val parser: ActorRef = context.actorOf(Props[Parser])
   var client: ActorRef = ActorRef.noSender
+  var persistor: ActorRef = context.actorOf(Props[Persistor])
 
   def showUrl(url: String): String = {
     try {
@@ -27,27 +27,20 @@ class Crawler extends Actor {
 
     case Start(url) =>
       client = sender
-      visited = url :: visited
-      fetcher ! Fetch(url)
+      persistor ! ValidateVisited(url)
 
     case Fetched(url, html) =>
       parser ! Parse(url, html)
 
     case Parsed(urls) =>
-      val newUrls = urls.filter(url => !visited.contains(url))
 
-      newUrls.foreach(url => {
-        fetcher ! Fetch(url)
-        client ! Print(showUrl(url) + "    " + url)
+      urls.foreach(url => {
+        persistor ! ValidateVisited(url)
       })
 
-      visited = visited ::: newUrls
-
-    case StatsRequest(lastCount) =>
-      sender ! StatsResponse(visited.size, visited.size - lastCount)
-
-    case DumpRequest() =>
-      sender ! DumpResponse(visited)
+    case ValidatedUnvisited(url) =>
+      fetcher ! Fetch(url)
+      client ! Print(showUrl(url) + "    " + url)
 
   }
 

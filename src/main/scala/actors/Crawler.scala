@@ -11,12 +11,11 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
-class Crawler extends Actor {
+case class Crawler(history: ActorRef) extends Actor {
 
 
   val parser: ActorRef = context.actorOf(Props[Parser])
   var client: ActorRef = ActorRef.noSender
-  var history: ActorRef = context.actorOf(Props(HistoryProvider.getHistory(Configuration.getConfig("history"))))
   val fetcher: ActorRef = context.actorOf(Props(Fetcher(Configuration.getConfig("fetcherWorkers") toInt)))
   var toValidate: List[String] = List()
   val newURLConsumer: URLConsumer = URLConsumerProvider.getConsumer(Configuration.getConfig("URLConsumer"))

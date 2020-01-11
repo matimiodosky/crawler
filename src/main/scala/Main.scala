@@ -9,7 +9,7 @@ import util.Configuration
 import scala.concurrent.duration.Duration
 import scala.concurrent.ExecutionContext.Implicits.global
 
-
+import actors.Crawler
 
 object Main  extends App {
 

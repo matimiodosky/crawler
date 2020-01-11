@@ -17,6 +17,8 @@ import scala.language.postfixOps
 case class MongoHistory() extends History with MongoAccessor {
 
   val start: Long = System.currentTimeMillis()
+  var lastTime: Long = start
+  var lastCount: Int = 0
 
   Logger.getLogger("org.mongodb.driver").setLevel(Level.WARNING)
 
@@ -38,8 +40,14 @@ case class MongoHistory() extends History with MongoAccessor {
       collection
         .countDocuments()
         .toFuture()
-        .map(count => StatsResponse(count toInt, count / (time / 1000) toInt, time / count toInt, (System.currentTimeMillis() - start)/ 1000 toInt))
-        .pipeTo(sender)
+        .map(count => StatsResponse(count toInt, count / (time / 1000) toInt, time / count toInt, (System.currentTimeMillis() - start) / 1000 toInt))
+        .foreach(response => {
+
+          println("Time: " + time / 1000 + " Count: " + response.count + " -- Per Second: " + response.perSecond + "  -- Per URL (millis): " + response.perURL + "-- Per Second Latetly: " + (response.count - lastCount) / ((time - lastTime) / 1000) )
+          lastTime = time
+          lastCount = response.count
+        }
+        )
 
 
     case work =>

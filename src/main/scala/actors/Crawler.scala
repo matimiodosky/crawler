@@ -43,14 +43,14 @@ class Crawler extends Actor {
     case Start(url) =>
       client = sender
       Await.result(history ? Clean(), 1 days)
-      history ! ValidateAsNewURL(url)
+//      history ! ValidateAsNewURL(url)
 
 
     case Fetched(url, html) => parser ! Parse(url, html)
 
     case Parsed(urls) =>
       val max: Int = prop.getProperty("maxToValidate").toInt
-      toValidate = toValidate ::: urls
+      toValidate = toValidate ::: urls.filter(url => showUrl(url).equals(prop.getProperty("pageFilter")))
       toValidate.take(max).foreach(history ! ValidateAsNewURL(_))
       toValidate = toValidate.drop(max)
 

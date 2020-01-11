@@ -7,8 +7,9 @@ import messages._
 class Printer extends Actor {
 
   override def receive: Receive = {
-    case Print(str) =>
-      println(str)
+//    case Print(str) =>
+//      println(str)
+    case _=>
   }
 
 

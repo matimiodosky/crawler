@@ -12,18 +12,14 @@ case class Parse(url: String, html: Document)
 
 case class Parsed(urls: List[String])
 
-case class Print(string: String)
-
-case class StatsRequest(lastCount: Int)
-
-case class StatsResponse(currentCount: Int, newsCount: Int)
-
 case class ValidateAsNewURL(url: String)
 
 case class NewURL(url: String)
 
-case class DumpResponse(urls: List[String])
+case class Stats()
 
-case class DumpRequest()
+case class StatsResponse(count: Int, perSecond: Int, perURL: Int)
 
-case class Tick()
+case class Clean()
+
+

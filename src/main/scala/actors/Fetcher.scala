@@ -1,6 +1,6 @@
 package actors
 
-import akka.actor.{Actor, ActorRef, Props}
+import akka.actor.{Actor, Props}
 import akka.routing.{ActorRefRoutee, RoundRobinRoutingLogic, Router}
 import messages._
 import org.jsoup.Jsoup

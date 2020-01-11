@@ -8,6 +8,7 @@ import akka.actor.{Actor, ActorRef, Props, _}
 import akka.pattern.ask
 import akka.util.Timeout
 import messages._
+import util.newURLStrategy.{URLConsumer, URLConsumerProvider}
 
 import scala.collection.immutable.List
 import scala.concurrent.Await
@@ -23,8 +24,10 @@ class Crawler extends Actor {
   val parser: ActorRef = context.actorOf(Props[Parser])
   var client: ActorRef = ActorRef.noSender
   var history: ActorRef = context.actorOf(Props(History(prop.getProperty("historyWorkers") toInt)))
+  var historyStats: ActorRef = context.actorOf(Props[HistoryStats])
   val fetcher: ActorRef = context.actorOf(Props(Fetcher(prop.getProperty("fetcherWorkers") toInt)))
   var toValidate: List[String] = List()
+  val newURLConsumer: URLConsumer = URLConsumerProvider.getConsumer(prop.getProperty("URLConsumer"))
 
   implicit val timeout: Timeout = Timeout(5 seconds)
 
@@ -43,8 +46,7 @@ class Crawler extends Actor {
     case Start(url) =>
       client = sender
       Await.result(history ? Clean(), 1 days)
-//      history ! ValidateAsNewURL(url)
-
+      history ! ValidateAsNewURL(url)
 
     case Fetched(url, html) => parser ! Parse(url, html)
 
@@ -56,15 +58,13 @@ class Crawler extends Actor {
 
     case NewURL(url) =>
       fetcher ! Fetch(url)
-      println("NEW URL   " + showUrl(url) + "    " + url)
+      newURLConsumer.onNewURL(url)
 
     case Stats() =>
-      history ! Stats()
+      historyStats ! Stats()
 
-    case StatsResponse(count, perSecond, perURL) =>
-//      (1 to 20).foreach(_ => println('\n'))
-      println("Count: " + count + " -- Per Second: " + perSecond + "  -- Per URL (millis): " + perURL + " -- To Validate: " + toValidate.size)
-//      (1 to 20).foreach(_ => println('\n'))
+    case StatsResponse(count, perSecond, perURL, time) =>
+      println("Time: " + time + " Count: " + count + " -- Per Second: " + perSecond + "  -- Per URL (millis): " + perURL + " -- To Validate: " + toValidate.size)
 
   }
 

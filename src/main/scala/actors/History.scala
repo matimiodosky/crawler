@@ -9,7 +9,6 @@ import org.mongodb.scala._
 import org.mongodb.scala.model.Filters._
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.jdk.CollectionConverters._
 import scala.language.postfixOps
 import akka.pattern.pipe
 
@@ -45,14 +44,6 @@ class HistoryWorker extends Actor with MongoAccessor {
 
   override def receive: Receive = {
 
-    case Stats() =>
-      val time = System.currentTimeMillis() - start
-      collection
-        .countDocuments()
-        .toFuture()
-        .map(count => StatsResponse(count toInt, count / (time / 1000) toInt, time / count toInt))
-        .pipeTo(sender)
-
     case ValidateAsNewURL(url) =>
       collection
         .countDocuments(equal("_id", url))
@@ -64,34 +55,7 @@ class HistoryWorker extends Actor with MongoAccessor {
         .map(_ => NewURL(url))
         .pipeTo(sender)
 
-
   }
 }
 
-  trait MongoAccessor {
 
-    val mongoClient: MongoClient = MongoClient()
-
-    val settings: MongoClientSettings = MongoClientSettings.builder()
-      .applyToClusterSettings(b => b.hosts(List(new ServerAddress("localhost")).asJava))
-      .build()
-
-    val database: MongoDatabase = mongoClient.getDatabase("crawler")
-
-    val collection: MongoCollection[Document] = database.getCollection("visited")
-
-    val noOpObserver: Observer[Completed] = new Observer[Completed] {
-
-      override def onNext(result: Completed): Unit = {
-        //      println(result)
-      }
-
-      override def onError(e: Throwable): Unit = {
-        //      println(e)
-      }
-
-      override def onComplete(): Unit = {
-        //      println("completed")
-      }
-    }
-  }

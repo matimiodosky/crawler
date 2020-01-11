@@ -18,7 +18,7 @@ case class NewURL(url: String)
 
 case class Stats()
 
-case class StatsResponse(count: Int, perSecond: Int, perURL: Int)
+case class StatsResponse(count: Int, perSecond: Int, perURL: Int, timeElapsed: Int)
 
 case class Clean()
 

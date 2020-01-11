@@ -21,7 +21,7 @@ case class MongoHistory() extends History with MongoAccessor {
   Logger.getLogger("org.mongodb.driver").setLevel(Level.WARNING)
 
   var router: Router = {
-    val workers = Vector.fill(Configuration.getConfig("historyWorkers") toInt) {
+    val workers = Vector.fill(Configuration.getConfig("mongoHistoryWorkers") toInt) {
       val r = context.actorOf(Props[MongoHistoryWorker])
       context.watch(r)
       ActorRefRoutee(r)

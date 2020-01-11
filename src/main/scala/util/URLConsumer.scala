@@ -8,7 +8,8 @@ trait URLConsumer {
 
 object PrinterConsumer extends URLConsumer {
 
-  override def onNewURL(url: String): Unit = println(url)
+  import URLUtil.getHost
+  override def onNewURL(url: String): Unit = println(getHost(url) + " " + url)
 
 }
 

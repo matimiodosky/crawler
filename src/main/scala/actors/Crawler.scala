@@ -8,6 +8,7 @@ import akka.actor.{Actor, ActorRef, Props, _}
 import akka.pattern.ask
 import akka.util.Timeout
 import messages._
+import util.URLUtil
 import util.newURLStrategy.{URLConsumer, URLConsumerProvider}
 
 import scala.collection.immutable.List
@@ -31,16 +32,6 @@ class Crawler extends Actor {
 
   implicit val timeout: Timeout = Timeout(5 seconds)
 
-  def showUrl(url: String): String = {
-    try {
-      val uri = new URI(url)
-      val domain = uri.getHost
-      if (domain.startsWith("www.")) domain.substring(4) else domain
-    } catch {
-      case _: Exception => ""
-    }
-  }
-
   override def receive: Receive = {
 
     case Start(url) =>
@@ -52,7 +43,7 @@ class Crawler extends Actor {
 
     case Parsed(urls) =>
       val max: Int = prop.getProperty("maxToValidate").toInt
-      toValidate = toValidate ::: urls.filter(url => showUrl(url).equals(prop.getProperty("pageFilter")))
+      toValidate = toValidate ::: urls.filter(url => URLUtil.getHost(url).equals(prop.getProperty("pageFilter")))
       toValidate.take(max).foreach(history ! ValidateAsNewURL(_))
       toValidate = toValidate.drop(max)
 

@@ -38,7 +38,7 @@ case class CrawlerWorker(history: ActorRef) extends Actor {
   val fetcher: ActorRef = context.actorOf(Props(Fetcher(Configuration.getConfig("fetcherWorkers") toInt)))
   var toValidate: List[String] = List()
   val newURLConsumer: URLConsumer = URLConsumerProvider.getConsumer(Configuration.getConfig("URLConsumer"))
-  val start = System.currentTimeMillis()
+  val start: Long = System.currentTimeMillis()
   implicit val timeout: Timeout = Timeout(5 seconds)
 
 

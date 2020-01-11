@@ -17,6 +17,6 @@ object Main  extends App {
   val crawler: ActorRef = system.actorOf(Props[Crawler])
 
   crawler.tell(Start("https://www.infobae.com"), printer)
-  system.scheduler.scheduleAtFixedRate(Duration.Zero, Duration(5 , TimeUnit.SECONDS) , crawler, Stats())
+  system.scheduler.scheduleAtFixedRate(Duration(5 , TimeUnit.SECONDS) , Duration(5 , TimeUnit.SECONDS) , crawler, Stats())
 
 }

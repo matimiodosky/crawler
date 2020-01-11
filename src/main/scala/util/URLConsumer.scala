@@ -1,4 +1,4 @@
-package util.newURLStrategy
+package util
 
 trait URLConsumer {
 

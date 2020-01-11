@@ -1,26 +1,28 @@
-package actors
+package actors.history
 
 import java.util.logging.{Level, Logger}
 
+import actors.MongoAccessor
 import akka.actor.{Actor, Props}
-import akka.routing.{ActorRefRoutee, RoundRobinRoutingLogic, Router, SmallestMailboxRoutingLogic}
+import akka.pattern.pipe
+import akka.routing.{ActorRefRoutee, RoundRobinRoutingLogic, Router}
 import messages._
 import org.mongodb.scala._
 import org.mongodb.scala.model.Filters._
+import util.Configuration
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.language.postfixOps
-import akka.pattern.pipe
 
-case class History(workersCount: Int) extends Actor with MongoAccessor {
+case class MongoHistory() extends History with MongoAccessor {
 
   val start: Long = System.currentTimeMillis()
 
   Logger.getLogger("org.mongodb.driver").setLevel(Level.WARNING)
 
   var router: Router = {
-    val workers = Vector.fill(8) {
-      val r = context.actorOf(Props[HistoryWorker])
+    val workers = Vector.fill(Configuration.getConfig("historyWorkers") toInt) {
+      val r = context.actorOf(Props[MongoHistoryWorker])
       context.watch(r)
       ActorRefRoutee(r)
     }
@@ -31,6 +33,15 @@ case class History(workersCount: Int) extends Actor with MongoAccessor {
 
     case Clean() => collection.drop().toFuture().map(_ => "cleaned").pipeTo(sender)
 
+    case Stats() =>
+      val time = System.currentTimeMillis() - start
+      collection
+        .countDocuments()
+        .toFuture()
+        .map(count => StatsResponse(count toInt, count / (time / 1000) toInt, time / count toInt, (System.currentTimeMillis() - start)/ 1000 toInt))
+        .pipeTo(sender)
+
+
     case work =>
       router.route(work, sender)
 
@@ -38,7 +49,7 @@ case class History(workersCount: Int) extends Actor with MongoAccessor {
 
 }
 
-class HistoryWorker extends Actor with MongoAccessor {
+class MongoHistoryWorker extends Actor with MongoAccessor {
 
   val start: Long = System.currentTimeMillis()
 

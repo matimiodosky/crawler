@@ -19,7 +19,7 @@ object Main  extends App {
 
   val crawler: ActorRef = system.actorOf(Props(Crawler(history)))
 
-  crawler.tell(Start("https://www.infobae.com"), printer)
+  crawler.tell(Start(Configuration.getConfig("initialPage")), printer)
   system.scheduler.scheduleAtFixedRate(Duration(5 , TimeUnit.SECONDS) , Duration(5 , TimeUnit.SECONDS) , history, Stats())
 
 }

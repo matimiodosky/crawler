@@ -34,7 +34,7 @@ case class CrawlerWorker(history: ActorRef) extends Actor {
   val parser: ActorRef = context.actorOf(Props[Parser])
   var client: ActorRef = ActorRef.noSender
   val fetcher: ActorRef = context.actorOf(Props(Fetcher(Configuration.getConfig("fetcherWorkers") toInt)))
-  val graph: ActorRef = context.actorOf(Props[Graph])
+  val graph: ActorRef = context.actorOf(Props[GraphManager])
   var toValidate: List[String] = List()
   val newURLConsumer: URLConsumer = URLConsumerProvider.getConsumer(Configuration.getConfig("URLConsumer"))
   val start: Long = System.currentTimeMillis()

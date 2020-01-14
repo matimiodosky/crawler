@@ -56,7 +56,7 @@ case class CrawlerWorker(history: ActorRef) extends Actor {
       urls.foreach(url => graph ! NewVertex(origin, url))
 
       toValidate = toValidate ::: urls
-        .filter(url => URLUtil.getHost(url).equals(Configuration.getConfig("pageFilter")))
+        .filter(url => !Configuration.getConfig("filterPage").toBoolean || URLUtil.getHost(url).equals(Configuration.getConfig("pageFilter")))
       toValidate.take(max).foreach(history ! ValidateAsNewURL(_))
       toValidate = toValidate.drop(max)
 

@@ -1,6 +1,5 @@
 package actors
 
-import actors.history.HistoryProvider
 import akka.actor.{Actor, ActorRef, Props, _}
 import akka.pattern.ask
 import akka.routing.{ActorRefRoutee, RoundRobinRoutingLogic, Router}
@@ -25,7 +24,6 @@ case class Crawler(history: ActorRef) extends Actor {
     Router(RoundRobinRoutingLogic(), workers)
   }
 
-
   override def receive: Receive = {
     case work => router.route(work, sender)
   }
@@ -36,6 +34,7 @@ case class CrawlerWorker(history: ActorRef) extends Actor {
   val parser: ActorRef = context.actorOf(Props[Parser])
   var client: ActorRef = ActorRef.noSender
   val fetcher: ActorRef = context.actorOf(Props(Fetcher(Configuration.getConfig("fetcherWorkers") toInt)))
+  val graph: ActorRef = context.actorOf(Props[Graph])
   var toValidate: List[String] = List()
   val newURLConsumer: URLConsumer = URLConsumerProvider.getConsumer(Configuration.getConfig("URLConsumer"))
   val start: Long = System.currentTimeMillis()
@@ -51,8 +50,11 @@ case class CrawlerWorker(history: ActorRef) extends Actor {
 
     case Fetched(url, html) => parser ! Parse(url, html)
 
-    case Parsed(urls) =>
+    case Parsed(origin, urls) =>
       var max = Configuration.getConfig("maxToValidate").toInt
+
+      urls.foreach(url => graph ! NewVertex(origin, url))
+
       toValidate = toValidate ::: urls
         .filter(url => URLUtil.getHost(url).equals(Configuration.getConfig("pageFilter")))
       toValidate.take(max).foreach(history ! ValidateAsNewURL(_))

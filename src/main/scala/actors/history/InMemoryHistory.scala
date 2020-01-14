@@ -27,8 +27,10 @@ case class InMemoryHistory() extends History {
     case Stats() =>
       val time = System.currentTimeMillis() - start
       val response = StatsResponse(history.size, history.size / (time / 1000) toInt, time / history.size toInt, (System.currentTimeMillis() - start) / 1000 toInt)
-      println("Time: " + time / 1000 + " Count: " + response.count + " -- Per Second: " + response.perSecond + "  -- Per URL (millis): " + response.perURL + "-- Per Second Latetly: " + (response.count - lastCount) / ((time - lastTime) / 1000) )
+      println("Time: " + time / 1000 + " Count: " + response.count + " -- Per Second: " + response.perSecond + "  -- Per URL (millis): " + response.perURL + "-- Per Second Latetly: " + (response.count - lastCount) / ((time - lastTime) / 1000))
       lastTime = time
       lastCount = response.count
+
   }
+
 }

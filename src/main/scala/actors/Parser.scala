@@ -38,7 +38,7 @@ class Parser extends Actor {
 
     case Parse(url, html) =>
       Future {getUrls(url, html)}
-          .map(urls => Parsed(urls))
+          .map(urls => Parsed(url, urls))
           .pipeTo(sender)
   }
 

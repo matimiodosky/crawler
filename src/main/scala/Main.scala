@@ -22,4 +22,5 @@ object Main  extends App {
   crawler.tell(Start(Configuration.getConfig("initialPage")), printer)
   system.scheduler.scheduleAtFixedRate(Duration(5 , TimeUnit.SECONDS) , Duration(5 , TimeUnit.SECONDS) , history, Stats())
 
+
 }
